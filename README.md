@@ -34,12 +34,11 @@ Un sencillo dashboard .html para colaboración en bug bounty: buscador por ID, e
 
 • Formato: interfaz web local (HTML/JS), toda la data se guarda en localStorage por defecto (offline, en tu máquina).<br><br>
 
-<br>
 
 <picture> <img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width ="1050" > </picture>
 <br>
 
-### <picture> <img src = "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExOXB5c2oxYnBwdGJpc3hhejl1c3Jzc3cyZTlzOWQ4a2N4dGx4eWdjbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/vYBtBiaNcZF3F3Iaip/giphy.gif" width = 80px>  </picture> Características
+### <picture> <img src = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExemxiY2czNWdld2w0a3lwODRudTF6dDc3Z3FqNmZ6Mzcyd2lmZTd6cSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/N8L2MCh9bCpu1BjF3V/giphy.gif" width = 80px>  </picture> Características
 <br><br>
 
 
@@ -69,7 +68,7 @@ Un sencillo dashboard .html para colaboración en bug bounty: buscador por ID, e
 <picture> <img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width ="1050" > </picture>
 <br>
 
-### <picture> <img src = "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGdlNnJtczFndjRkZXczMXR0MmRvMHJteXJmMG5hOWN3djdzcmhqYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/DY4GxWN6Ml3oVexySy/giphy.gif" width = 80px>  </picture> Uso
+### <picture> <img src = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExc28ycHl2NXQ2anBxNG1tc2p4ZWVmNmNoNDR5bnRzY3FzYmhnZmI4byZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/YOzYceBDdYmcJS3dzw/giphy.gif" width = 80px>  </picture> Uso
 <br><br>
 
 
