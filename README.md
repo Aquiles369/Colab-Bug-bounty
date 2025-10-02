@@ -1,2 +1,7 @@
-# Colab-Bug-bounty
-Un sencillo dashboard .html para colaboración en bug bounty: buscador por ID, edición en CRUD (añadir/editar/borrar filas y columnas), selección masiva, export/import y guardado en localStorage para compartir y trabajar en equipo sin dramas.
+Seguridad y uso responsable
+
+Solo en laboratorio / con permiso. No escanees sin autorización.
+
+La herramienta no exime de cumplir leyes locales o términos de uso de terceros.
+
+Para informes de seguridad y vulnerabilidades relacionados con este repositorio → ver SECURITY.md (contacto privado).
