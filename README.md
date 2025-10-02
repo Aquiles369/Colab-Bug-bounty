@@ -10,11 +10,11 @@
 
 <picture> <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">  </picture>
 
- ### <picture> <img src = "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExeGNpcXkya3F1NGF3NWNxdDI2bzg0c3NzMmhuZWFlMHNsOGI3YmoycSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/P4sS7sU2ufXz183cfy/giphy.gif" width = 75px>  </picture> Catálogo interactivo de códigos HTTP
+ ### <picture> <img src = "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2VscGV1NWIzZG81aTV1Yjhmd3V2OHA1cXlneHNsMmk0dWFjcGg5MSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9dHM/Dv8Klv7asiQFXRjSp9/giphy.gif" width = 75px>  </picture> Colab Bug bounty
 
 <br>
 
- **Catálogo web interactivo de códigos HTTP para bug bounty/pentesting. Incluye 1xx–5xx oficiales + “extra” no oficiales (Cloudflare, Nginx, etc.), búsqueda instantánea por número/texto, favoritos  y notas  con modal, categorías coloreadas, header/buscador fijo y encabezados de tabla sticky para navegar sin perder contexto. Todo persiste en localStorage y permite importar/exportar preferencias en JSON. Licencia MIT,<a href="https://youtu.be/EzWE7fqrCVo" target="_blank" rel="noopener">Youtube</a>.** 
+ **Herramienta ligera .html para equipos de bug bounty: registra informes, filtra por ID, personaliza columnas y filas, colabora exportando/importando JSON o CSV, y guarda todo en localStorage para evitar dependencias. Ideal para compartir con un compañero, llevar el histórico local y organizar triage y pagos de bounty sin complicaciones. ¡Perfecta para labs y para cuando quieres orden entre el caos de reports!,<a href="https://youtu.be/EzWE7fqrCVo" target="_blank" rel="noopener">Youtube</a>.** 
 <br><br> 
 
 <p align="center">
@@ -29,15 +29,10 @@
 ### <picture> <img src = "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExczVrcnhwNDAzajJmMWhrN3p3OGg2b3B0emRoOGFlMnNlNm04Y2I3dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/nndsQSOMEUToRELiAE/giphy.gif" width = 80px>  </picture> Resumen rápido
 <br><br>
 
-Catálogo web interactivo de códigos HTTP para bug bounty/pentesting. Incluye todos los oficiales 1xx–5xx (con 425 Too Early) + ~20 “extra” no oficiales (Cloudflare).<br>
+Un sencillo dashboard .html para colaboración en bug bounty: buscador por ID, edición en CRUD (añadir/editar/borrar filas y columnas), selección masiva, export/import y guardado en localStorage para compartir y trabajar en equipo sin dramas.<br>
 
 
 • Formato: interfaz web local (HTML/JS), toda la data se guarda en localStorage por defecto (offline, en tu máquina).<br><br>
-
-• Pasos a seguir:<br>
-1. Descarga el repositorio.<br>
-2. Abra el archivo Estados_servidor.html en con su navegador preferido.<br>
-3. Introduzca el código de estado (ej.: 429) o presione Ctrl + F y busque "429".<br>
 
 <br>
 
@@ -48,25 +43,28 @@ Catálogo web interactivo de códigos HTTP para bug bounty/pentesting. Incluye t
 <br><br>
 
 
-• Iniciar / Parar con botones y atajos (S = iniciar, P = parar).
+• Buscador por ID de informe (buscar rápido usando el ID del reporte).
 
-• Buscador por categoría y texto: filtra códigos por categoría (1xx, 2xx, 3xx, 4xx, 5xx y extra).
+• Añadir / eliminar filas (incluye “eliminar última fila”).
 
-• Persistencia local (sin backend) vía localStorage.
+• Añadir / eliminar columnas (puedes crear columnas personalizadas al vuelo).
 
-• Ctrl + F (búsqueda rápida): si presionás Ctrl+F e ingresás un código (ej.: 302), el navegador te lleva a la sección/parte donde se describe ese código.
+• Editar celdas (modificar cualquier dato del informe).
 
-• Buscador interno: el campo de búsqueda de la app permite encontrar por número, nombre o descripción y navegar directamente al resultado.
+• Selección múltiple con checkboxes (borrar/editar varias filas a la vez).
 
-• Notas por código: cada código HTTP tiene su panel de notas editable (guardar, editar, eliminar); se muestra la última modificación.
+• Exportar / Importar (JSON/CSV — para compartir con colegas).
 
-• Ocultar/mostrar categorías: podés ocultar categorías completas; recomendado no ocultarlas porque Ctrl+F del navegador no buscará dentro de secciones colapsadas — sí podés usar el buscador interno.
+• Persistencia local: todo se guarda en localStorage (offline y rápido).
 
-• Favoritos: agrega códigos a “Mis favoritos” para filtrar ruido visual y quedarte solo con lo que te interesa.
+• Indicador visual en Notas: icono/círculo rojo si hay contenido en notas.
 
-• Importar / Exportar: exportá e importá preferencias, favoritos y notas en un JSON (ej.: importa.json).
+• Tabla principal: 10 columnas predefinidas (ver abajo).
 
-• Cobertura: incluye todos los códigos HTTP oficiales (1xx–5xx, incluyendo 425 Too Early) y ~20 códigos extra/no oficiales (Cloudflare, Nginx, cPanel, frameworks, etc.) que se usan en la vida real.
+• Estados con colores para severidad y triage (visual rápido).
+
+• Interfaz colaborativa simple: compartir el archivo .html + JSON y listo.
+
 
 <picture> <img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width ="1050" > </picture>
 <br>
@@ -75,16 +73,34 @@ Catálogo web interactivo de códigos HTTP para bug bounty/pentesting. Incluye t
 <br><br>
 
 
-• Búsqueda de códigos HTTP: primero ingrese el código HTTP que le devolvió el servidor (ej.: 429) en el buscador interno, o use Ctrl + F para que el navegador lo lleve a la sección donde se describe ese código.
+• Título / Nombre del reporte — Título breve del hallazgo.
 
-• Uso simple y minimalista: diseñado para que cualquiera lo pueda usar sin complicaciones.
+• ID de informe — ID único que permite buscar.
+
+• Fecha de reporte — fecha cuando se reportó.
+
+• Encontrado por — nombre del que lo encontró (hunter).
+
+• Reportado por — quién envió el informe (puede coincidir).
+
+• Severidad / Estado del informe — Critical (rojo), High (naranja), Medium (amarillo), Low (verde), Info (gris).
+
+• Triage / Estado de gestión — triage (verde), resolver (azul), dupe (violeta), auto-close (gris), pendiente (amarillo), pelear (marrón) — colores para cada estado.
+
+• Bounty — Aquiles — campo para poner el nombre de quien recibió el bounty (o etiqueta).
+
+• Bounty — Mi parte / Bounty cobrado — valor o porcentaje que corresponde a la parte del informe; también un campo “bounty pagado total”.
+
+• Notas — campo tipo blog/texto largo; muestra un indicador rojo si tiene contenido.
+
+Mini-resumen / pitch (para README o explicación rápida)
  
  <br>
 
 <picture> <img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width ="1050" > </picture>
 <br>
 
-### <picture> <img src = "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExc3YwbG9zbmU1amprdTJsbmxzYnpobzd5eGtnazB6b2FmdnllaTRhZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/h8UlsEpqiCISTKUzvz/giphy.gif" width = 80px>  </picture> "Buscar rápido: escribe el código HTTP (ej.: 429) en el buscador para saltar instantáneamente a su descripción completa — incluye todos los códigos (oficiales y no oficiales, incluso los menos conocidos) en un único lugar."
+### <picture> <img src = "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExc3YwbG9zbmU1amprdTJsbmxzYnpobzd5eGtnazB6b2FmdnllaTRhZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/h8UlsEpqiCISTKUzvz/giphy.gif" width = 80px>  </picture> "BugBounty HQ: busca, organiza y comparte informes rápido y offline — tu tablero sin dramas."
 <br>
 
 
