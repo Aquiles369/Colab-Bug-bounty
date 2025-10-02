@@ -26,7 +26,7 @@
 <picture> <img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width ="1050" > </picture>
 <br>
 
-### <picture> <img src = "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExczVrcnhwNDAzajJmMWhrN3p3OGg2b3B0emRoOGFlMnNlNm04Y2I3dCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/nndsQSOMEUToRELiAE/giphy.gif" width = 80px>  </picture> Resumen rápido
+### <picture> <img src = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjFnMzNrdnpobWpoNXk1M2d4Mm13MTU3aHp3ODNoN2dqcDlxNm13cCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/QBedtJmJYwbXMbDUEf/giphy.gif" width = 80px>  </picture> Resumen rápido
 <br><br>
 
 Un sencillo dashboard .html para colaboración en bug bounty: buscador por ID, edición en CRUD (añadir/editar/borrar filas y columnas), selección masiva, export/import y guardado en localStorage para compartir y trabajar en equipo sin dramas.<br>
