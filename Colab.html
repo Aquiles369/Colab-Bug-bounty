@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0f1226">
+<title>Tabla Colaborativa — Bug Bounty</title>
+<link rel="icon" href="fav_Aquiles.png" type="image/x-icon">
+<style>
+  :root{
+    --bg:#0f1226; --card:#161a38; --ink:#e7e9ff; --muted:#9aa3ff;
+    --accent:#7c5cff; --accent-2:#e00000; --ok:#00e0c2; --warn:#ffd166; --line:rgba(255,255,255,.14);
+    --chip-critical:#ff4d4f; --chip-high:#ff7a45; --chip-medium:#faad14; --chip-low:#52c41a; --chip-info:#8c8c8c;
+    --chip-triaged:#5b8c00; --chip-resolved:#13c2c2; --chip-dupe:#b37feb; --chip-autoclose:#8c8c8c;
+    --chip-pending:#d89614; --chip-fight:#ffec3d;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;
+    background: radial-gradient(1200px 800px at 80% -10%, #1f2350 0%, transparent 60%),
+                radial-gradient(1000px 700px at -10% 110%, #1a1e45 0%, transparent 60%),
+                var(--bg);
+    color:var(--ink);
+    display:grid; grid-template-columns:minmax(0,1fr); padding:18px;
+  }
+
+  .wrap{width:min(1300px, 100%); margin:0 auto; display:grid; gap:14px}
+  .head{
+    position:sticky; top:10px; z-index:20;
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    background:linear-gradient(180deg, rgba(22,26,56,.92), rgba(22,26,56,.66));
+    border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px 12px;
+    box-shadow:0 10px 24px rgba(0,0,0,.25);
+  }
+  h1{margin:0; font-weight:900; letter-spacing:.3px; font-size:18px}
+  .muted{color:var(--muted); font-size:12px}
+
+  .btn{
+    appearance:none; border:none; border-radius:10px; padding:8px 12px; font-weight:700; letter-spacing:.2px;
+    color:#0b0d1f; background:linear-gradient(90deg, var(--accent), var(--accent-2)); cursor:pointer;
+    box-shadow:0 6px 18px rgba(124,92,255,.30);
+  }
+  .btn.ghost{background:transparent; color:var(--ink); border:1px solid var(--line); box-shadow:none}
+  .btn.small{padding:6px 10px; font-size:12px; border-radius:8px}
+  .btn:active{transform:translateY(1px)}
+
+  .search{flex:1; min-width:180px; padding:8px 10px; border-radius:10px; border:1px solid var(--line);
+    background:rgba(255,255,255,.06); color:var(--ink); font-weight:600}
+
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,.25); padding:10px; backdrop-filter:blur(6px);
+  }
+
+  table{width:100%; border-collapse:separate; border-spacing:0}
+  thead th{
+    position:sticky; top:62px; z-index:10;
+    background:rgba(22,26,56,.96); color:var(--ink);
+    border-bottom:1px solid var(--line);
+  }
+  th,td{padding:8px 10px; border-bottom:1px dashed var(--line); text-align:left; font-size:13px; vertical-align:middle}
+  tbody tr:hover{background:rgba(255,255,255,.04)}
+  .idcell{color:var(--muted); font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace}
+  .cell{min-width:100px}
+  .cell input, .cell select{
+    width:100%; padding:7px 8px; border-radius:8px; border:1px solid var(--line);
+    background:rgba(255,255,255,.06); color:var(--ink); font-weight:600
+  }
+  .chip{display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; font-weight:800; font-size:11px; color:#0b0d1f}
+  .sev-critical{background:var(--chip-critical)}
+  .sev-high{background:var(--chip-high)}
+  .sev-medium{background:var(--chip-medium)}
+  .sev-low{background:var(--chip-low)}
+  .sev-info{background:var(--chip-info)}
+  .state-triaged{background:var(--chip-triaged)}
+  .state-resolved{background:var(--chip-resolved)}
+  .state-dupe{background:var(--chip-dupe)}
+  .state-autoclose{background:var(--chip-autoclose); color:#fff}
+  .state-pending{background:var(--chip-pending)}
+  .state-fight{background:var(--chip-fight)}
+
+  .note-flag{width:8px; height:8px; border-radius:999px; background:var(--accent-2); box-shadow:0 0 6px rgba(255,0,0,.7); display:inline-block}
+
+  /* NUEVO: header seleccionado para borrar */
+  th.selcol{outline:2px solid var(--warn); box-shadow:0 0 0 2px rgba(255,209,102,.35) inset}
+
+  /* Modal */
+  .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.55); backdrop-filter: blur(2px)}
+  .modal.open{display:grid}
+  .modal .box{background:var(--card); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; width:min(720px,100%)}
+  .modal h2{margin:0 0 6px}
+  .modal p{color:var(--muted); margin:0 0 10px}
+  #noteArea{width:100%; min-height:220px; resize:vertical; background:rgba(255,255,255,.06); color:var(--ink);
+    border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:10px 12px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .actions{display:flex; gap:10px; justify-content:flex-end; margin-top:10px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <h1>📊 Tabla Bug Bounty</h1>
+      <input id="q" class="search" placeholder="Buscar (N° reporte, severidad, estado, etc.)" />
+      <button id="addRow" class="btn small">+ Fila</button>
+      <button id="addCol" class="btn small ghost">+ Columna</button>
+      <button id="delSel" class="btn small ghost">🗑 Eliminar filas</button>
+      <!-- NUEVO -->
+      <button id="delColSel" class="btn small ghost" title="Eliminar columna seleccionada">🗑 Eliminar columna</button>
+      <button id="delColLast" class="btn small ghost" title="Eliminar última columna de usuario">⟲ Eliminar última (user)</button>
+      <span class="muted">•</span>
+      <button id="expJSON" class="btn small ghost">Exportar JSON</button>
+      <button id="expCSV"  class="btn small ghost">Exportar CSV</button>
+      <button id="impJSON" class="btn small">Importar</button>
+      <input id="file" type="file" accept=".json,.csv" style="display:none" />
+    </div>
+
+    <div class="card">
+      <table id="tbl" aria-label="Tabla colaborativa bug bounty">
+        <thead><tr id="th"></tr></thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal de Notas -->
+  <div id="modal" class="modal" role="dialog" aria-modal="true">
+    <div class="box">
+      <h2 id="noteTitle">📝 Notas</h2>
+      <p>Escribí tranquilo. <b>Ctrl/Cmd + S</b> guarda. <b>Esc</b> cierra.</p>
+      <textarea id="noteArea" placeholder="Detalles del reporte, POC, timeline…"></textarea>
+      <div class="actions">
+        <button id="saveNote" class="btn small">Guardar (Ctrl+S)</button>
+        <button id="closeNote" class="btn small ghost">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const LS_KEY = 'aquiles_table_bb_v1';
+
+  // columnas base (protegidas para no borrar accidentalmente)
+  const BASE_KEYS = new Set(['sel','id','fecha','found','reported','sev','state','b_mago','b_gamba','b_paid','notes']);
+
+  const DEFAULT_COLUMNS = [
+    { key:'sel',   title:'', type:'select', width:36 },
+    { key:'id',    title:'N° Reporte', type:'text', width:110 },
+    { key:'fecha', title:'Fecha de Reporte', type:'date', width:120 },
+    { key:'found', title:'Encontrado por', type:'text', width:120 },
+    { key:'reported', title:'Reportado por', type:'text', width:120 },
+    { key:'sev',   title:'Severidad', type:'select-sev', width:110 },
+    { key:'state', title:'Verdadero estado', type:'select-state', width:140 },
+    { key:'b_mago',  title:'Bounty - Mago', type:'text', width:120 },
+    { key:'b_gamba', title:'Bounty - Gamba', type:'text', width:130 },
+    { key:'b_paid',  title:'Bounty - Pagados', type:'text', width:140 },
+    { key:'notes', title:'Notas', type:'notes', width:80 }
+  ];
+
+  const SEV_OPTS = [
+    {v:'Critical', c:'sev-critical'},
+    {v:'High',     c:'sev-high'},
+    {v:'Medium',   c:'sev-medium'},
+    {v:'Low',      c:'sev-low'},
+    {v:'Info',     c:'sev-info'}
+  ];
+  const STATE_OPTS = [
+    {v:'Triaged',   c:'state-triaged'},
+    {v:'Resolved',  c:'state-resolved'},
+    {v:'Dupe',      c:'state-dupe'},
+    {v:'Auto-Close',c:'state-autoclose'},
+    {v:'Pendiente', c:'state-pending'},
+    {v:'PELEAR',    c:'state-fight'}
+  ];
+
+  let columns = [];
+  let rows = [];
+  let selectedColIdx = -1; // NUEVO
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  function uid(){ return Math.random().toString(36).slice(2,9); }
+  function todayISO(){ const d=new Date(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}-${m}-${day}`; }
+
+  function load(){
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw){
+      columns = DEFAULT_COLUMNS;
+      rows = Array.from({length:5}, ()=> ({
+        __id: uid(), id:'', fecha: todayISO(), found:'', reported:'',
+        sev:'', state:'', b_mago:'', b_gamba:'', b_paid:'', __notes:''
+      }));
+      save();
+    } else {
+      try{
+        const obj = JSON.parse(raw);
+        columns = obj.columns || DEFAULT_COLUMNS;
+        rows = obj.rows || [];
+      }catch{
+        columns = DEFAULT_COLUMNS; rows = [];
+      }
+    }
+  }
+  function save(){ localStorage.setItem(LS_KEY, JSON.stringify({columns, rows})); }
+
+  // ===== Render encabezados
+  function renderHead(){
+    const tr = $('#th'); tr.innerHTML = '';
+    selectedColIdx = -1; // limpiar selección al redibujar
+    columns.forEach((col, idx)=>{
+      const th = document.createElement('th');
+      th.style.width = (col.width||110)+'px';
+      th.dataset.idx = idx; // NUEVO
+
+      if(col.key==='sel'){ th.innerHTML = `<input id="chkAll" type="checkbox" title="Seleccionar todo" />`; }
+      else{
+        const span = document.createElement('span');
+        span.textContent = col.title || col.key;
+        span.style.fontWeight = '800';
+        th.appendChild(span);
+
+        // seleccionar encabezado (para borrar)
+        th.addEventListener('click', (e)=>{
+          // evitar conflicto con doble click (renombrar)
+          if(e.detail === 1){
+            $$('#th th').forEach(t=>t.classList.remove('selcol'));
+            th.classList.add('selcol');
+            selectedColIdx = idx;
+          }
+        });
+
+        // renombrar con doble click
+        th.addEventListener('dblclick', ()=>{
+          const inp = document.createElement('input');
+          inp.value = span.textContent;
+          inp.style.width = '100%';
+          inp.className = 'search';
+          th.innerHTML = ''; th.appendChild(inp); inp.focus(); inp.select();
+          const commit = ()=>{
+            const v = (inp.value||'').trim(); if(v){ columns[idx].title = v; save(); renderHead(); }
+          };
+          inp.addEventListener('keydown', e=>{ if(e.key==='Enter') commit(); else if(e.key==='Escape') renderHead(); });
+          inp.addEventListener('blur', commit);
+        });
+      }
+      tr.appendChild(th);
+    });
+    const all = $('#chkAll');
+    if(all){ all.addEventListener('change', ()=> { $$('#tb input.rowSel').forEach(cb=>cb.checked = all.checked); }); }
+  }
+
+  // ===== Render filas
+  function chip(htmlClass, text){
+    const div = document.createElement('span');
+    div.className = 'chip '+htmlClass;
+    div.textContent = text;
+    return div;
+  }
+
+  function renderRows(){
+    const tb = $('#tb'); tb.innerHTML = '';
+    const query = ($('#q').value||'').trim().toLowerCase();
+
+    rows.forEach((row)=>{
+      const flat = Object.values(row).join(' ').toLowerCase();
+      if(query && !flat.includes(query)) return;
+
+      const tr = document.createElement('tr');
+      columns.forEach((col)=>{
+        const td = document.createElement('td');
+        if(col.key==='sel'){
+          td.innerHTML = `<input class="rowSel" type="checkbox" />`;
+          td.style.width='36px';
+        } else if(col.type==='select-sev'){
+          td.className = 'cell';
+          td.appendChild(row.sev ? chip(SEV_OPTS.find(o=>o.v===row.sev)?.c || '', row.sev) : document.createTextNode(''));
+          td.addEventListener('click', ()=> openSelect(td, row, col, SEV_OPTS, 'sev'));
+        } else if(col.type==='select-state'){
+          td.className = 'cell';
+          td.appendChild(row.state ? chip(STATE_OPTS.find(o=>o.v===row.state)?.c || '', row.state) : document.createTextNode(''));
+          td.addEventListener('click', ()=> openSelect(td, row, col, STATE_OPTS, 'state'));
+        } else if(col.type==='notes'){
+          const has = !!row.__notes;
+          td.innerHTML = has ? `<span class="note-flag" title="Tiene notas"></span>` : '';
+          td.style.cursor = 'pointer';
+          td.addEventListener('click', ()=> openNotes(row));
+        } else {
+          td.className = 'cell ' + (col.key==='id' ? 'idcell' : '');
+          td.textContent = row[col.key] || '';
+          td.addEventListener('click', ()=> openInput(td, row, col));
+        }
+        tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+  }
+
+  function openInput(td, row, col){
+    const old = row[col.key] || '';
+    td.innerHTML = '';
+    const inp = document.createElement('input');
+    inp.value = old;
+    if(col.type==='date') inp.type='date';
+    td.appendChild(inp);
+    inp.focus(); try{ inp.select(); }catch{}
+    const commit = ()=>{ row[col.key] = inp.value; save(); renderRows(); };
+    inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ commit(); } else if(e.key==='Escape'){ renderRows(); } });
+    inp.addEventListener('blur', commit);
+  }
+
+  function openSelect(td, row, col, opts, key){
+    td.innerHTML = '';
+    const sel = document.createElement('select');
+    sel.innerHTML = `<option value=""></option>` + opts.map(o=>`<option value="${o.v}">${o.v}</option>`).join('');
+    sel.value = row[key] || '';
+    td.appendChild(sel); sel.focus();
+    const commit=()=>{ row[key]=sel.value; save(); renderRows(); };
+    sel.addEventListener('change', commit);
+    sel.addEventListener('blur', commit);
+    sel.addEventListener('keydown', e=>{ if(e.key==='Escape') renderRows(); });
+  }
+
+  // ===== Notas (modal)
+  const $modal = $('#modal'), $noteArea = $('#noteArea'), $noteTitle = $('#noteTitle');
+  const $saveNote = $('#saveNote'), $closeNote = $('#closeNote');
+  let noteRow = null;
+
+  function openNotes(row){
+    noteRow = row;
+    $noteTitle.textContent = `📝 Notas — ${row.id || row.__id}`;
+    $noteArea.value = row.__notes || '';
+    $modal.classList.add('open'); $noteArea.focus();
+  }
+  function closeNotes(){ $modal.classList.remove('open'); noteRow = null; }
+  function saveNotes(){
+    if(!noteRow) return;
+    noteRow.__notes = $noteArea.value.trim();
+    save(); closeNotes(); renderRows();
+  }
+  $saveNote.addEventListener('click', saveNotes);
+  $closeNote.addEventListener('click', closeNotes);
+  window.addEventListener('keydown', e=>{
+    if($modal.classList.contains('open')){
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveNotes(); }
+      if(e.key==='Escape'){ e.preventDefault(); closeNotes(); }
+    }
+  });
+
+  // ===== Acciones toolbar
+  $('#addRow').addEventListener('click', ()=>{
+    rows.push({ __id:uid(), id:'', fecha:todayISO(), found:'', reported:'', sev:'', state:'', b_mago:'', b_gamba:'', b_paid:'', __notes:'' });
+    save(); renderRows();
+  });
+
+  $('#delSel').addEventListener('click', ()=>{
+    const keep = [];
+    const checks = $$('#tb .rowSel');
+    let i=0;
+    rows.forEach(r=>{
+      const chk = checks[i++]; 
+      if(!chk || !chk.checked) keep.push(r);
+    });
+    rows = keep; save(); renderRows();
+  });
+
+  $('#addCol').addEventListener('click', ()=>{
+    const key = 'col_' + uid();
+    columns.splice(columns.length-1, 0, { key, title:'Nueva Columna', type:'text', width:120 });
+    rows.forEach(r=> r[key]='');
+    save(); renderHead(); renderRows();
+  });
+
+  // NUEVO: eliminar columna seleccionada
+  $('#delColSel').addEventListener('click', ()=>{
+    if(selectedColIdx < 0){ alert('Seleccioná un encabezado (click) para borrarlo.'); return; }
+    const col = columns[selectedColIdx];
+    if(!isRemovable(col)){ alert('Esa columna es base y está protegida. Agregá columnas con "+ Columna" para poder borrarlas.'); return; }
+    if(!confirm(`Eliminar columna "${col.title || col.key}"?`)) return;
+
+    const key = col.key;
+    columns.splice(selectedColIdx,1);
+    rows.forEach(r=>{ delete r[key]; });
+    save(); renderHead(); renderRows();
+  });
+
+  // NUEVO: eliminar última columna de usuario (key col_*)
+  $('#delColLast').addEventListener('click', ()=>{
+    let idx = -1;
+    for(let i=columns.length-1;i>=0;i--){
+      if(isRemovable(columns[i])){ idx = i; break; }
+    }
+    if(idx<0){ alert('No hay columnas de usuario para borrar.'); return; }
+    const col = columns[idx];
+    if(!confirm(`Eliminar última columna de usuario: "${col.title || col.key}"?`)) return;
+    const key = col.key;
+    columns.splice(idx,1);
+    rows.forEach(r=>{ delete r[key]; });
+    save(); renderHead(); renderRows();
+  });
+
+  function isRemovable(col){
+    // protegidas: 'sel' y cualquier key base; borrables: key que empiece con 'col_' o no esté en BASE_KEYS
+    if(col.key === 'sel') return false;
+    if(col.key.startsWith('col_')) return true;
+    return !BASE_KEYS.has(col.key);
+  }
+
+  $('#q').addEventListener('input', renderRows);
+
+  // ===== Export / Import
+  function rowsForExport(){ return rows.map(r=>({...r})); }
+  function toCSV(arr, cols){
+    const head = cols.map(c=>'"'+(c.title||c.key).replaceAll('"','""')+'"').join(',');
+    const lines = arr.map(r=>{
+      return cols.map(c=>{
+        const val = r[c.key] ?? '';
+        return '"'+String(val).replaceAll('"','""')+'"';
+      }).join(',');
+    });
+    return head + '\n' + lines.join('\n');
+  }
+
+  $('#expJSON').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify({columns, rows:rowsForExport()}, null, 2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tabla_bug_bounty.json'; a.click();
+  });
+  $('#expCSV').addEventListener('click', ()=>{
+    const exportCols = columns.filter(c=>c.key!=='sel' && c.type!=='notes');
+    const csv = toCSV(rows, exportCols);
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tabla_bug_bounty.csv'; a.click();
+  });
+  $('#impJSON').addEventListener('click', ()=> $('#file').click());
+  $('#file').addEventListener('change', async (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    const txt = await f.text();
+    if(f.name.endsWith('.csv')){
+      const lines = txt.trim().split(/\r?\n/);
+      if(lines.length<2) return;
+      const headers = lines[0].split(',').map(s=>s.replace(/^"|"$/g,'').trim());
+      const map = [];
+      const usable = columns.filter(c=>c.key!=='sel' && c.type!=='notes');
+      headers.forEach(h=>{
+        const col = usable.find(c => (c.title||c.key).toLowerCase() === h.toLowerCase());
+        map.push(col?.key || null);
+      });
+      rows = lines.slice(1).map(line=>{
+        const parts = line.match(/("([^"]|"")*"|[^,]+)/g) || [];
+        const r = { __id:uid(), __notes:'' };
+        parts.forEach((cell, i)=>{
+          let v = cell.replace(/^"|"$/g,'').replace(/""/g,'"');
+          const k = map[i]; if(k) r[k]=v;
+        });
+        return r;
+      });
+      save(); renderRows();
+    } else {
+      try{
+        const obj = JSON.parse(txt);
+        if(Array.isArray(obj.columns)) columns = obj.columns;
+        if(Array.isArray(obj.rows)) rows = obj.rows;
+        save(); renderHead(); renderRows();
+      }catch(err){ alert('JSON inválido'); }
+    }
+    e.target.value = '';
+  });
+
+  // ===== Init
+  load(); renderHead(); renderRows();
+})();
+</script>
+</body>
+</html>
