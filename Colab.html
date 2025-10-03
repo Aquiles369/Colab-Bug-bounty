@@ -100,7 +100,7 @@
 <body>
   <div class="wrap">
     <div class="head">
-      <h1>📊 Tabla Bug Bounty</h1>
+      <h1> Tabla Bug Bounty</h1>
       <input id="q" class="search" placeholder="Buscar (N° reporte, severidad, estado, etc.)" />
       <button id="addRow" class="btn small">+ Fila</button>
       <button id="addCol" class="btn small ghost">+ Columna</button>
@@ -141,7 +141,7 @@
   const LS_KEY = 'aquiles_table_bb_v1';
 
   // columnas base (protegidas para no borrar accidentalmente)
-  const BASE_KEYS = new Set(['sel','id','fecha','found','reported','sev','state','b_mago','b_gamba','b_paid','notes']);
+  const BASE_KEYS = new Set(['sel','id','fecha','found','reported','sev','state','b_julio','b_gamba','b_paid','notes']);
 
   const DEFAULT_COLUMNS = [
     { key:'sel',   title:'', type:'select', width:36 },
@@ -151,7 +151,7 @@
     { key:'reported', title:'Reportado por', type:'text', width:120 },
     { key:'sev',   title:'Severidad', type:'select-sev', width:110 },
     { key:'state', title:'Verdadero estado', type:'select-state', width:140 },
-    { key:'b_mago',  title:'Bounty - Mago', type:'text', width:120 },
+    { key:'b_julio',  title:'Bounty - Julio', type:'text', width:120 },
     { key:'b_gamba', title:'Bounty - Gamba', type:'text', width:130 },
     { key:'b_paid',  title:'Bounty - Pagados', type:'text', width:140 },
     { key:'notes', title:'Notas', type:'notes', width:80 }
@@ -188,7 +188,7 @@
       columns = DEFAULT_COLUMNS;
       rows = Array.from({length:5}, ()=> ({
         __id: uid(), id:'', fecha: todayISO(), found:'', reported:'',
-        sev:'', state:'', b_mago:'', b_gamba:'', b_paid:'', __notes:''
+        sev:'', state:'', b_julio:'', b_gamba:'', b_paid:'', __notes:''
       }));
       save();
     } else {
@@ -348,7 +348,7 @@
 
   // ===== Acciones toolbar
   $('#addRow').addEventListener('click', ()=>{
-    rows.push({ __id:uid(), id:'', fecha:todayISO(), found:'', reported:'', sev:'', state:'', b_mago:'', b_gamba:'', b_paid:'', __notes:'' });
+    rows.push({ __id:uid(), id:'', fecha:todayISO(), found:'', reported:'', sev:'', state:'', b_julio:'', b_gamba:'', b_paid:'', __notes:'' });
     save(); renderRows();
   });
 
