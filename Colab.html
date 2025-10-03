@@ -8,6 +8,7 @@
 <link rel="icon" href="assets/fav_Aquiles.png" type="image/x-icon">
 <style>
   :root{
+    color-scheme: dark; /* Fuerza UI nativa oscura (select, inputs, etc.) */
     --bg:#171719; --card:#0e0e10; --ink:#b2b5d3; --muted:#0f8925;
     --accent:#7c5cff; --accent-2:#e00000; --ok:#00e0c2; --warn:#ffd166; --line:rgba(255,255,255,.14);
     --chip-critical:#ff4d4f; --chip-high:#ff7a45; --chip-medium:#faad14; --chip-low:#52c41a; --chip-info:#8c8c8c;
@@ -23,11 +24,12 @@
                 var(--bg);
     color:var(--ink);
     display:grid; grid-template-columns:minmax(0,1fr); padding:18px;
+    overflow:visible; /* evita clipeos raros */
   }
 
-  .wrap{width:min(1300px, 100%); margin:0 auto; display:grid; gap:14px}
+  .wrap{width:min(1300px,100%); margin:0 auto; display:grid; gap:14px; overflow:visible}
   .head{
-    position:sticky; top:10px; z-index:20;
+    position:sticky; top:10px; z-index:20; /* por debajo del modal gigante */
     display:flex; gap:10px; align-items:center; flex-wrap:wrap;
     background:linear-gradient(180deg, rgba(22,26,56,.92), rgba(22,26,56,.66));
     border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px 12px;
@@ -52,6 +54,7 @@
     background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
     border:1px solid rgba(255,255,255,0.08);
     border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,.25); padding:10px; backdrop-filter:blur(6px);
+    position:relative; z-index:1; overflow:visible; /* deja pasar dropdowns */
   }
 
   table{width:100%; border-collapse:separate; border-spacing:0}
@@ -62,12 +65,17 @@
   }
   th,td{padding:8px 10px; border-bottom:1px dashed var(--line); text-align:left; font-size:13px; vertical-align:middle}
   tbody tr:hover{background:rgba(255,255,255,.04)}
-  .idcell{color:var(--muted); font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace}
+  .idcell{color:var(--muted); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
   .cell{min-width:100px}
   .cell input, .cell select{
     width:100%; padding:7px 8px; border-radius:8px; border:1px solid var(--line);
-    background:rgba(255,255,255,.06); color:var(--ink); font-weight:600
+    background:rgba(255,255,255,.06); color:var(--ink); font-weight:600;
   }
+  /* oscurecer popup en motores que lo permiten */
+  .cell select, .cell option{
+    background-color:#1b1c22; color:var(--ink);
+  }
+
   .chip{display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; font-weight:800; font-size:11px; color:#0b0d1f}
   .sev-critical{background:var(--chip-critical)}
   .sev-high{background:var(--chip-high)}
@@ -85,7 +93,9 @@
 
   th.selcol{outline:2px solid var(--warn); box-shadow:0 0 0 2px rgba(255,209,102,.35) inset}
 
-  .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.55); backdrop-filter: blur(2px)}
+  /* Modal: z-index gigante para quedar SIEMPRE arriba */
+  .modal{position:fixed; inset:0; display:none; place-items:center;
+    background:rgba(0,0,0,.55); backdrop-filter: blur(2px); z-index:99999;}
   .modal.open{display:grid}
   .modal .box{background:var(--card); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; width:min(720px,100%)}
   .modal h2{margin:0 0 6px}
@@ -98,7 +108,7 @@
 <body>
   <div class="wrap">
     <div class="head">
-      <h1> tabla bug bounty</h1>
+      <h1> Tabla Bug Bounty</h1>
       <input id="q" class="search" placeholder="Buscar (N° reporte, severidad, estado, etc.)" />
       <button id="addRow" class="btn small">+ Fila</button>
       <button id="addCol" class="btn small ghost">+ Columna</button>
@@ -123,7 +133,7 @@
   <!-- Modal de Notas -->
   <div id="modal" class="modal" role="dialog" aria-modal="true">
     <div class="box">
-      <h2 id="noteTitle"> notas</h2>
+      <h2 id="noteTitle"> Notas</h2>
       <p>Escribí tranquilo. <b>Ctrl/Cmd + S</b> guarda. <b>Esc</b> cierra.</p>
       <textarea id="noteArea" placeholder="Detalles del reporte, POC, timeline…"></textarea>
       <div class="actions">
@@ -213,7 +223,7 @@
     }
   }
 
-  // ===== Render encabezados
+  /* HEAD */
   function renderHead(){
     const tr = $('#th'); tr.innerHTML = '';
     selectedColIdx = -1;
@@ -256,7 +266,7 @@
     if(all){ all.addEventListener('change', ()=> { $$('#tb input.rowSel').forEach(cb=>cb.checked = all.checked); }); }
   }
 
-  // ===== Render filas
+  /* FILAS */
   function chip(htmlClass, text){
     const div = document.createElement('span');
     div.className = 'chip '+htmlClass;
@@ -320,6 +330,7 @@
     const sel = document.createElement('select');
     sel.innerHTML = `<option value=""></option>` + opts.map(o=>`<option value="${o.v}">${o.v}</option>`).join('');
     sel.value = row[key] || '';
+    sel.style.position = 'relative'; sel.style.zIndex = 1000; /* por las dudas */
     td.appendChild(sel); sel.focus();
     const commit=()=>{ row[key]=sel.value; save(); renderRows(); };
     sel.addEventListener('change', commit);
@@ -327,7 +338,7 @@
     sel.addEventListener('keydown', e=>{ if(e.key==='Escape') renderRows(); });
   }
 
-  // ===== Notas (modal) — con autosave y protección de cierre
+  /* NOTAS (modal) con autosave + confirmación */
   const $modal = $('#modal'), $noteArea = $('#noteArea'), $noteTitle = $('#noteTitle');
   const $saveNote = $('#saveNote'), $closeNote = $('#closeNote');
   let noteRow = null;
@@ -337,51 +348,38 @@
   function openNotes(row){
     noteRow = row;
     noteDirty = false;
-    $noteTitle.textContent = ` notas — ${row.id || row.__id}`;
+    $noteTitle.textContent = ` Notas — ${row.id || row.__id}`;
     $noteArea.value = row.__notes || '';
-    $modal.classList.add('open'); 
+    $modal.classList.add('open');
     $noteArea.focus();
   }
   function commitNotes(){
     if(!noteRow) return;
-    const val = $noteArea.value;
-    noteRow.__notes = val;
+    noteRow.__notes = $noteArea.value;
     save();
     noteDirty = false;
   }
   function closeNotes(force=false){
     if(!force && noteDirty){
       const ok = confirm('Tenés cambios sin guardar. ¿Guardar antes de cerrar?');
-      if(ok){ commitNotes(); }
+      if(ok) commitNotes();
     }
-    $modal.classList.remove('open'); 
-    noteRow = null; 
+    $modal.classList.remove('open');
+    noteRow = null;
     noteDirty = false;
     if(noteTimer){ clearTimeout(noteTimer); noteTimer=null; }
     renderRows();
   }
-  function saveNotesBtn(){
-    commitNotes();
-    closeNotes(true);
-  }
+  function saveNotesBtn(){ commitNotes(); closeNotes(true); }
 
-  // autosave (debounce 600ms)
   $noteArea.addEventListener('input', ()=>{
     noteDirty = true;
     if(noteTimer) clearTimeout(noteTimer);
-    noteTimer = setTimeout(()=>{ commitNotes(); }, 600);
+    noteTimer = setTimeout(commitNotes, 600);
   });
-
-  // botones / teclas
   $saveNote.addEventListener('click', saveNotesBtn);
   $closeNote.addEventListener('click', ()=> closeNotes(false));
-  // cerrar al clickear fuera de la caja (backdrop), sin perder datos por accidente
-  $modal.addEventListener('click', (e)=>{
-    if(e.target === $modal){
-      closeNotes(false);
-    }
-  });
-
+  $modal.addEventListener('click', (e)=>{ if(e.target === $modal) closeNotes(false); });
   window.addEventListener('keydown', e=>{
     if($modal.classList.contains('open')){
       if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveNotesBtn(); }
@@ -389,7 +387,7 @@
     }
   });
 
-  // ===== Acciones toolbar
+  /* Toolbar */
   $('#addRow').addEventListener('click', ()=>{
     rows.push({ __id:uid(), id:'', fecha:todayISO(), found:'', reported:'', sev:'', state:'', b_julio:'', b_gamba:'', b_paid:'', __notes:'' });
     save(); renderRows();
@@ -447,7 +445,7 @@
 
   $('#q').addEventListener('input', renderRows);
 
-  // ===== Export / Import
+  /* Export / Import */
   function rowsForExport(){ return rows.map(r=>({...r})); }
   function toCSV(arr, cols){
     const head = cols.map(c=>'"'+(c.title||c.key).replaceAll('"','""')+'"').join(',');
@@ -505,7 +503,7 @@
     e.target.value = '';
   });
 
-  // ===== Init
+  /* Init */
   load(); renderHead(); renderRows();
 })();
 </script>
