@@ -83,10 +83,8 @@
 
   .note-flag{width:8px; height:8px; border-radius:999px; background:var(--accent-2); box-shadow:0 0 6px rgba(255,0,0,.7); display:inline-block}
 
-  /* NUEVO: header seleccionado para borrar */
   th.selcol{outline:2px solid var(--warn); box-shadow:0 0 0 2px rgba(255,209,102,.35) inset}
 
-  /* Modal */
   .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.55); backdrop-filter: blur(2px)}
   .modal.open{display:grid}
   .modal .box{background:var(--card); border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:16px; width:min(720px,100%)}
@@ -100,12 +98,11 @@
 <body>
   <div class="wrap">
     <div class="head">
-      <h1> Tabla Bug Bounty</h1>
+      <h1> tabla bug bounty</h1>
       <input id="q" class="search" placeholder="Buscar (N° reporte, severidad, estado, etc.)" />
       <button id="addRow" class="btn small">+ Fila</button>
       <button id="addCol" class="btn small ghost">+ Columna</button>
       <button id="delSel" class="btn small ghost">🗑 Eliminar filas</button>
-      <!-- NUEVO -->
       <button id="delColSel" class="btn small ghost" title="Eliminar columna seleccionada">🗑 Eliminar columna</button>
       <button id="delColLast" class="btn small ghost" title="Eliminar última columna de usuario">⟲ Eliminar última (user)</button>
       <span class="muted"></span>
@@ -126,7 +123,7 @@
   <!-- Modal de Notas -->
   <div id="modal" class="modal" role="dialog" aria-modal="true">
     <div class="box">
-      <h2 id="noteTitle"> Notas</h2>
+      <h2 id="noteTitle"> notas</h2>
       <p>Escribí tranquilo. <b>Ctrl/Cmd + S</b> guarda. <b>Esc</b> cierra.</p>
       <textarea id="noteArea" placeholder="Detalles del reporte, POC, timeline…"></textarea>
       <div class="actions">
@@ -140,7 +137,6 @@
 (function(){
   const LS_KEY = 'aquiles_table_bb_v1';
 
-  // columnas base (protegidas para no borrar accidentalmente)
   const BASE_KEYS = new Set(['sel','id','fecha','found','reported','sev','state','b_julio','b_gamba','b_paid','notes']);
 
   const DEFAULT_COLUMNS = [
@@ -175,17 +171,31 @@
 
   let columns = [];
   let rows = [];
-  let selectedColIdx = -1; // NUEVO
+  let selectedColIdx = -1;
 
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
-  function uid(){ return Math.random().toString(36).slice(2,9); }
-  function todayISO(){ const d=new Date(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}-${m}-${day}`; }
+  const uid = () => Math.random().toString(36).slice(2,9);
+  const todayISO = () => {
+    const d=new Date();
+    const m=String(d.getMonth()+1).padStart(2,'0');
+    const day=String(d.getDate()).padStart(2,'0');
+    return `${d.getFullYear()}-${m}-${day}`;
+  };
+
+  function save(){
+    try{
+      localStorage.setItem(LS_KEY, JSON.stringify({columns, rows}));
+    }catch(e){
+      console.error('Error al guardar en localStorage:', e);
+      alert('No se pudo guardar (localStorage). Liberá espacio o reduce datos.');
+    }
+  }
 
   function load(){
     const raw = localStorage.getItem(LS_KEY);
     if(!raw){
-      columns = DEFAULT_COLUMNS;
+      columns = DEFAULT_COLUMNS.slice();
       rows = Array.from({length:5}, ()=> ({
         __id: uid(), id:'', fecha: todayISO(), found:'', reported:'',
         sev:'', state:'', b_julio:'', b_gamba:'', b_paid:'', __notes:''
@@ -194,23 +204,23 @@
     } else {
       try{
         const obj = JSON.parse(raw);
-        columns = obj.columns || DEFAULT_COLUMNS;
-        rows = obj.rows || [];
+        columns = Array.isArray(obj.columns) ? obj.columns : DEFAULT_COLUMNS.slice();
+        rows = Array.isArray(obj.rows) ? obj.rows : [];
       }catch{
-        columns = DEFAULT_COLUMNS; rows = [];
+        columns = DEFAULT_COLUMNS.slice();
+        rows = [];
       }
     }
   }
-  function save(){ localStorage.setItem(LS_KEY, JSON.stringify({columns, rows})); }
 
   // ===== Render encabezados
   function renderHead(){
     const tr = $('#th'); tr.innerHTML = '';
-    selectedColIdx = -1; // limpiar selección al redibujar
+    selectedColIdx = -1;
     columns.forEach((col, idx)=>{
       const th = document.createElement('th');
       th.style.width = (col.width||110)+'px';
-      th.dataset.idx = idx; // NUEVO
+      th.dataset.idx = idx;
 
       if(col.key==='sel'){ th.innerHTML = `<input id="chkAll" type="checkbox" title="Seleccionar todo" />`; }
       else{
@@ -219,9 +229,7 @@
         span.style.fontWeight = '800';
         th.appendChild(span);
 
-        // seleccionar encabezado (para borrar)
         th.addEventListener('click', (e)=>{
-          // evitar conflicto con doble click (renombrar)
           if(e.detail === 1){
             $$('#th th').forEach(t=>t.classList.remove('selcol'));
             th.classList.add('selcol');
@@ -229,7 +237,6 @@
           }
         });
 
-        // renombrar con doble click
         th.addEventListener('dblclick', ()=>{
           const inp = document.createElement('input');
           inp.value = span.textContent;
@@ -320,29 +327,65 @@
     sel.addEventListener('keydown', e=>{ if(e.key==='Escape') renderRows(); });
   }
 
-  // ===== Notas (modal)
+  // ===== Notas (modal) — con autosave y protección de cierre
   const $modal = $('#modal'), $noteArea = $('#noteArea'), $noteTitle = $('#noteTitle');
   const $saveNote = $('#saveNote'), $closeNote = $('#closeNote');
   let noteRow = null;
+  let noteDirty = false;
+  let noteTimer = null;
 
   function openNotes(row){
     noteRow = row;
-    $noteTitle.textContent = ` Notas — ${row.id || row.__id}`;
+    noteDirty = false;
+    $noteTitle.textContent = ` notas — ${row.id || row.__id}`;
     $noteArea.value = row.__notes || '';
-    $modal.classList.add('open'); $noteArea.focus();
+    $modal.classList.add('open'); 
+    $noteArea.focus();
   }
-  function closeNotes(){ $modal.classList.remove('open'); noteRow = null; }
-  function saveNotes(){
+  function commitNotes(){
     if(!noteRow) return;
-    noteRow.__notes = $noteArea.value.trim();
-    save(); closeNotes(); renderRows();
+    const val = $noteArea.value;
+    noteRow.__notes = val;
+    save();
+    noteDirty = false;
   }
-  $saveNote.addEventListener('click', saveNotes);
-  $closeNote.addEventListener('click', closeNotes);
+  function closeNotes(force=false){
+    if(!force && noteDirty){
+      const ok = confirm('Tenés cambios sin guardar. ¿Guardar antes de cerrar?');
+      if(ok){ commitNotes(); }
+    }
+    $modal.classList.remove('open'); 
+    noteRow = null; 
+    noteDirty = false;
+    if(noteTimer){ clearTimeout(noteTimer); noteTimer=null; }
+    renderRows();
+  }
+  function saveNotesBtn(){
+    commitNotes();
+    closeNotes(true);
+  }
+
+  // autosave (debounce 600ms)
+  $noteArea.addEventListener('input', ()=>{
+    noteDirty = true;
+    if(noteTimer) clearTimeout(noteTimer);
+    noteTimer = setTimeout(()=>{ commitNotes(); }, 600);
+  });
+
+  // botones / teclas
+  $saveNote.addEventListener('click', saveNotesBtn);
+  $closeNote.addEventListener('click', ()=> closeNotes(false));
+  // cerrar al clickear fuera de la caja (backdrop), sin perder datos por accidente
+  $modal.addEventListener('click', (e)=>{
+    if(e.target === $modal){
+      closeNotes(false);
+    }
+  });
+
   window.addEventListener('keydown', e=>{
     if($modal.classList.contains('open')){
-      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveNotes(); }
-      if(e.key==='Escape'){ e.preventDefault(); closeNotes(); }
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveNotesBtn(); }
+      if(e.key==='Escape'){ e.preventDefault(); closeNotes(false); }
     }
   });
 
@@ -370,7 +413,6 @@
     save(); renderHead(); renderRows();
   });
 
-  // NUEVO: eliminar columna seleccionada
   $('#delColSel').addEventListener('click', ()=>{
     if(selectedColIdx < 0){ alert('Seleccioná un encabezado (click) para borrarlo.'); return; }
     const col = columns[selectedColIdx];
@@ -383,7 +425,6 @@
     save(); renderHead(); renderRows();
   });
 
-  // NUEVO: eliminar última columna de usuario (key col_*)
   $('#delColLast').addEventListener('click', ()=>{
     let idx = -1;
     for(let i=columns.length-1;i>=0;i--){
@@ -399,7 +440,6 @@
   });
 
   function isRemovable(col){
-    // protegidas: 'sel' y cualquier key base; borrables: key que empiece con 'col_' o no esté en BASE_KEYS
     if(col.key === 'sel') return false;
     if(col.key.startsWith('col_')) return true;
     return !BASE_KEYS.has(col.key);
@@ -437,7 +477,7 @@
     if(f.name.endsWith('.csv')){
       const lines = txt.trim().split(/\r?\n/);
       if(lines.length<2) return;
-      const headers = lines[0].split(',').map(s=>s.replace(/^"|"$/g,'').trim());
+      const headers = lines[0].match(/("([^"]|"")*"|[^,]+)/g).map(s=>s.replace(/^"|"$/g,'').trim());
       const map = [];
       const usable = columns.filter(c=>c.key!=='sel' && c.type!=='notes');
       headers.forEach(h=>{
@@ -445,7 +485,7 @@
         map.push(col?.key || null);
       });
       rows = lines.slice(1).map(line=>{
-        const parts = line.match(/("([^"]|"")*"|[^,]+)/g) || [];
+        const parts = (line.match(/("([^"]|"")*"|[^,]+)/g) || []);
         const r = { __id:uid(), __notes:'' };
         parts.forEach((cell, i)=>{
           let v = cell.replace(/^"|"$/g,'').replace(/""/g,'"');
