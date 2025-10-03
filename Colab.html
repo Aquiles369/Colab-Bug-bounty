@@ -8,7 +8,7 @@
 <link rel="icon" href="assets/fav_Aquiles.png" type="image/x-icon">
 <style>
   :root{
-    --bg:#0f1226; --card:#0a1ca5; --ink:#8c93e1; --muted:#9aa3ff;
+    --bg:#171719; --card:#0e0e10; --ink:#b2b5d3; --muted:#0f8925;
     --accent:#7c5cff; --accent-2:#e00000; --ok:#00e0c2; --warn:#ffd166; --line:rgba(255,255,255,.14);
     --chip-critical:#ff4d4f; --chip-high:#ff7a45; --chip-medium:#faad14; --chip-low:#52c41a; --chip-info:#8c8c8c;
     --chip-triaged:#5b8c00; --chip-resolved:#13c2c2; --chip-dupe:#b37feb; --chip-autoclose:#8c8c8c;
@@ -108,7 +108,7 @@
       <!-- NUEVO -->
       <button id="delColSel" class="btn small ghost" title="Eliminar columna seleccionada">🗑 Eliminar columna</button>
       <button id="delColLast" class="btn small ghost" title="Eliminar última columna de usuario">⟲ Eliminar última (user)</button>
-      <span class="muted">•</span>
+      <span class="muted"></span>
       <button id="expJSON" class="btn small ghost">Exportar JSON</button>
       <button id="expCSV"  class="btn small ghost">Exportar CSV</button>
       <button id="impJSON" class="btn small">Importar</button>
@@ -126,7 +126,7 @@
   <!-- Modal de Notas -->
   <div id="modal" class="modal" role="dialog" aria-modal="true">
     <div class="box">
-      <h2 id="noteTitle">📝 Notas</h2>
+      <h2 id="noteTitle"> Notas</h2>
       <p>Escribí tranquilo. <b>Ctrl/Cmd + S</b> guarda. <b>Esc</b> cierra.</p>
       <textarea id="noteArea" placeholder="Detalles del reporte, POC, timeline…"></textarea>
       <div class="actions">
@@ -327,7 +327,7 @@
 
   function openNotes(row){
     noteRow = row;
-    $noteTitle.textContent = `📝 Notas — ${row.id || row.__id}`;
+    $noteTitle.textContent = ` Notas — ${row.id || row.__id}`;
     $noteArea.value = row.__notes || '';
     $modal.classList.add('open'); $noteArea.focus();
   }
