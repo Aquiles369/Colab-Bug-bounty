@@ -23,6 +23,23 @@
 
 <br>
 
+
+
+### <picture> <img src = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWNkbGU4YmY1Y3NwYWZwbXhxM3JkeXBvbDczZ2tuMHozdHN6c2VkbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/HGRy4mm3FNLFFAZT0P/giphy.gif" width = 75px>  </picture> Problema que resuelve<br><br>
+**En bug bounty, llevar un control claro de los informes, su estado, severidad, recompensas y triaje suele volverse un caos: hojas de cálculo dispersas, datos en mil archivos distintos y cero colaboración sencilla. Además, muchas soluciones requieren bases de datos o servicios externos, lo que complica aún más el flujo.<br><br>
+Esta herramienta elimina ese desorden ofreciendo un panel HTML ligero, sin dependencias y totalmente offline, donde podés organizar, buscar, editar y compartir reportes fácilmente desde tu navegador.</a>.** 
+
+<br>
+
+### <picture> <img src = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExenVnZHMzMDV5cXByb2JlZjc3MXFib3RqbjhlMzRjZHJwamw2NzhtaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/EsrllKxkP7iEU5pGJJ/giphy.gif" width = 75px>  </picture> Qué aporta y cómo beneficia <br><br>
+**• Gestión total sin complicaciones: permite registrar y editar informes, añadir o eliminar columnas y filas, buscar por ID, marcar severidades por color y gestionar estados de triaje sin depender de plataformas externas.<br><br>
+• Colaboración sencilla: exportá o importá toda la data en JSON o CSV y compartila con tu equipo en segundos. Solo con el archivo .html y el JSON ya tienen un tablero funcional sin necesidad de servidores.<br><br>
+• Persistencia local y velocidad: todo se guarda automáticamente en localStorage, funcionando 100 % offline y sin configuraciones, ideal para laboratorios o flujos rápidos.<br><br>
+• Mejor organización y enfoque: centralizar el histórico de reportes, estados y recompensas en un solo lugar evita confusiones, acelera decisiones y mejora el trabajo en equipo durante el triaje.</a>.** 
+
+<br>
+
+
 <picture> <img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width ="1050" > </picture>
 <br>
 
